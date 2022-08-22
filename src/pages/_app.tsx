@@ -1,14 +1,61 @@
 import { useRouter } from 'next/router'
 import type { AppProps } from 'next/app'
-import { useRef } from 'react'
-import { LocomotiveScrollProvider as RLSProvider } from 'react-locomotive-scroll'
+import { MutableRefObject, useRef, useEffect } from 'react'
+import {
+  LocomotiveScrollProvider as RLSProvider,
+  useLocomotiveScroll,
+} from 'react-locomotive-scroll'
+import gsap from 'gsap/dist/gsap'
+import ScrollTrigger from 'gsap/dist/ScrollTrigger'
+
+import { PageLayout } from '@/components'
 
 import 'locomotive-scroll/dist/locomotive-scroll.css'
 import '@/styles/globals.css'
 
+gsap.registerPlugin(ScrollTrigger)
+
+const ScrollTriggerProxy = () => {
+  const { scroll } = useLocomotiveScroll()
+
+  useEffect(() => {
+    if (scroll) {
+      const element = scroll?.el
+
+      scroll.on('scroll', () => {
+        ScrollTrigger.update()
+        ScrollTrigger.refresh()
+      })
+      ScrollTrigger.scrollerProxy(element, {
+        scrollTop(value) {
+          return arguments.length
+            ? scroll.scrollTo(value, 0, 0)
+            : scroll.scroll.instance.scroll.y
+        },
+        getBoundingClientRect() {
+          return {
+            top: 0,
+            left: 0,
+            width: window.innerWidth,
+            height: window.innerHeight,
+          }
+        },
+        pinType: element.style.transform ? 'transform' : 'fixed',
+      })
+    }
+
+    return () => {
+      ScrollTrigger.addEventListener('refresh', () => scroll?.update())
+      ScrollTrigger.refresh()
+    }
+  }, [scroll])
+
+  return null
+}
+
 function MyApp({ Component, pageProps }: AppProps) {
   const { asPath } = useRouter()
-  const containerRef = useRef(null)
+  const containerRef = useRef(null) as MutableRefObject<HTMLDivElement | null>
   return (
     <RLSProvider
       options={{
@@ -28,9 +75,10 @@ function MyApp({ Component, pageProps }: AppProps) {
       }
       containerRef={containerRef}
     >
-      <div data-scroll-container ref={containerRef}>
+      <ScrollTriggerProxy />
+      <PageLayout containerRef={containerRef}>
         <Component {...pageProps} />;
-      </div>
+      </PageLayout>
     </RLSProvider>
   )
 }

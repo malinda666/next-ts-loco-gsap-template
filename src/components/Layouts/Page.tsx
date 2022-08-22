@@ -1,18 +1,23 @@
 import Head from 'next/head'
+import { Ref, FC } from 'react'
 
-type Props = {
+type LayoutProps = {
   children?: React.ReactNode
+  containerRef?: Ref<HTMLDivElement>
 
   // TODO after implementing header, footer
   // headerProps?: HeaderProps
   // footerProps?: FooterProps
 }
 
-const PageLayout = ({ children }: Props) => {
+const PageLayout: FC<LayoutProps> = ({
+  children,
+  containerRef,
+}: LayoutProps) => {
   return (
     <>
       <Head>
-        <title>Rukmal Air Tours - Redesign</title>
+        <title>NEXT+TS+GSAP+LS+TW Template</title>
         <link
           rel="apple-touch-icon"
           sizes="180x180"
@@ -35,7 +40,9 @@ const PageLayout = ({ children }: Props) => {
       </Head>
       {/* TODO Header */}
       {/* <Header /> */}
-      <main className="max-w-7xl relative mx-auto">{children}</main>
+      <div className="" ref={containerRef} data-scroll-container>
+        <main className="max-w-7xl relative mx-auto">{children}</main>
+      </div>
       {/* TODO Footer */}
       {/* <Footer /> */}
     </>
